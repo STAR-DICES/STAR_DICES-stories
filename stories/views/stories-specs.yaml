@@ -1,0 +1,386 @@
+swagger: "2.0"
+info:
+  description: "This the microservice that handles all the requests about the stories database"
+  version: "1.0.0"
+  title: "Stories Microservice"
+schemes:
+- "http"
+paths:
+  /:
+    get:
+      operationId: myHome
+      produces:
+      - "application/json"
+      responses:
+        '200':
+          description: "Home stories correctly loaded"
+          schema:
+            $ref: '#/definitions/StoryArray'
+        '400':
+          description: "??"
+        '302':
+          description: "User not logged in"
+          
+  /explore:
+    get:
+      operationId: explore
+      produces:
+      - "application/json"
+      responses:
+        '200':
+          description: "Explore page stories correctly loaded"
+          schema:
+            $ref: '#/definitions/StoryArray'
+        '400':
+          description: "Malformed request"
+        '302':
+          description: "User not logged in"
+    post:
+      operationId: exploreRange
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in : "body"
+        name: "body"
+        required: true
+        description: The dates of stories to be loaded
+        schema:
+          $ref: "#/definitions/Date"
+      responses:
+        '200':
+          description: "Stories correctly loaded"
+          schema:
+            $ref: '#/definitions/StoryArray'
+        '400':
+          description: "Malformed request"
+        '302':
+          description: "User not logged in"
+          
+  /story:
+    get:
+      operationId: getStory
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in : "body"
+        name: "body"
+        required: true
+        description: Object containing story_id to retrieve
+        schema:
+          $ref: "#/definitions/StoryId"
+      responses:
+        '200':
+          description: "Story correctly loaded"
+          schema:
+            $ref: '#/definitions/Story'
+        '400':
+          description: "Malformed request"
+        '302':
+          description: "User not logged in"
+    delete:
+      operationId: deleteStory
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in : "body"
+        name: "body"
+        required: true
+        description: Object containing story_id to delete
+        schema:
+          $ref: "#/definitions/StoryId"
+      responses:
+        '200':
+          description: "Story correctly deleted"
+        '400':
+          description: "Malformed request"
+        '302':
+          description: "User not logged in"
+          
+  /story/random_story:
+    get:
+      operationId: getRandomStory
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        '200':
+          description: "Random story correctly loaded"
+          schema:
+            $ref: '#/definitions/Story'
+        '400':
+          description: "Malformed request"
+        '302':
+          description: "User not logged in"
+          
+  /story/like:
+    put:
+      operationId: like
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in : "body"
+        name: "body"
+        required: true
+        description: Object containing story_id
+        schema:
+          $ref: "#/definitions/Reaction"
+      responses:
+        '200':
+          description: "Like added"
+        '400':
+          description: "Malformed request"
+        '404':
+          description: "Story not valid"
+    delete:
+        operationId: remove_like
+        consumes: 
+        - "application/json"
+        produces:
+        - "application/json"
+        parameters:
+        - in : "body"
+          name: "body"
+          required: true
+          description: Object containing story_id
+          schema:
+            $ref: "#/definitions/Reaction"
+        responses:
+          '200':
+            description: "Like removed"
+          '400':
+            description: "Malformed request"
+          '404':
+            description: "Story not valid"   
+          
+  /story/dislike:
+    put:
+      operationId: dislike
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in : "body"
+        name: "body"
+        required: true
+        description: Object containing story_id
+        schema:
+          $ref: "#/definitions/Reaction"
+      responses:
+        '200':
+          description: "Dislike added"
+        '400':
+          description: "Malformed request"
+        '404':
+          description: "Story not valid"
+    delete:
+      operationId: remove_dislike
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in : "body"
+        name: "body"
+        required: true
+        description: Object containing story_id
+        schema:
+          $ref: "#/definitions/Reaction"
+      responses:
+        '200':
+          description: "Dislike removed"
+        '400':
+          description: "Malformed request"
+        '404':
+          description: "Story not valid"
+          
+  /new_story:
+    get:
+      operationId: get_dice
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        '200':
+          description: Object containing dice themes
+          schema:
+            $ref: "#/definitions/DiceThemes"
+        '400':
+          description: "Malformed request"  
+    post:
+      operationId: roll_dice
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      responses:
+        '200':
+          description: Inizialized a new draft, return dice outcome
+          schema:
+            $ref: "#/definitions/DiceOutcome"
+        '302':
+          description: Already a draft in progress with this theme
+          schema:
+            $ref: "#/definitions/Draft" 
+          
+  /write_story:
+    get:
+      operationId: write_story
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in : "body"
+        name: "body"
+        required: true
+        description: Object containing story_id
+        schema:
+          $ref: "#/definitions/StoryId"
+      responses: 
+        '200':
+          description: "Draft retrieved"
+          schema:
+            $ref: "#/definitions/Draft"
+        '404':
+          description: "Can't write on this story"
+        '401':
+          description: "User is not the author of the story"    
+    post:
+      operationId: publish_story
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in : "body"
+        name: "body"
+        required: true
+        description: Object containing the story
+        schema:
+          $ref: "#/definitions/Draft"
+      responses: 
+        '200':
+          description: "Story published"
+        '400':
+          description: "Title is needed in order to publish the story and you must use all the words of the outcome"
+        '418':
+          description: "I'm a teapot"
+        '302':
+          description: "Draft saved"
+          
+definitions:
+  Story:
+    type: "object"
+    properties:
+      story_id:
+        type: "integer"
+      title:
+        type: "string"
+      text:
+        type: "string"
+      rolls_outcome:
+        type: "string"
+      theme:
+        type: "string"
+      date:
+        type: "string"
+      likes:
+        type: "integer"
+      dislikes:
+        type: "integer"
+      published:
+        type: "boolean"
+      author_id:
+        type: "integer"
+    required:
+    - "story_id"
+    - "title"
+    - "text"
+    - "rolls_outcome"
+    - "theme"
+    - "date"
+    - "likes"
+    - "dislikes"
+    - "published"
+    - "author_id"
+    additionalProperties: false
+    
+  StoryArray:
+    type: "array"
+    items:
+      $ref: '#/definitions/Story'
+      
+  Date:
+    type: "object"
+    properties:
+      beginDate:
+        type: "string"
+      endDate:
+        type: "string"
+    required: 
+    - "beginDate"
+    - "endDate"
+    additionalProperties: false
+     
+  StoryId:
+    type: "object"
+    properties:
+      story_id: 
+        type: "integer"
+    required:
+    - "story_id"
+    additionalProperties: false
+    
+  DiceThemes:
+    type: "string"
+    
+  DiceOutcome:
+    type: "string"
+  
+  Draft:
+    type: "object"
+    properties:
+      story_id:
+        type: "integer"
+      title:
+        type: "string"
+      text:
+        type: "string"
+      rolls_outcome:
+        type: "string"
+      theme:
+        type: "string"
+      published:
+        type: "boolean"
+      author_id:
+        type: "integer"
+    required:
+    - "story_id"
+    - "rolls_outcome"
+    - "theme"
+    - "author_id"
+    additionalProperties: false
+      
+  Reaction:
+    type: "object"
+    properties:
+      story_id:
+        type: "integer"
+      remove_opposite:
+        type: "boolean"
+    required:
+    - "story_id"
+    additionalProperties: false  
+
+          
