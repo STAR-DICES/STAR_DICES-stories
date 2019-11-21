@@ -6,81 +6,137 @@ info:
 schemes:
 - "http"
 paths:
-  /:
+  #ANCHOR 
+  /stories:
     get:
-      operationId: myHome
+      operationId: getStories
       produces:
       - "application/json"
-      responses:
-        '200':
-          description: "Home stories correctly loaded"
-          schema:
-            $ref: '#/definitions/StoryArray'
-        '400':
-          description: "??"
-        '302':
-          description: "User not logged in"
-          
-  /explore:
-    get:
-      operationId: explore
-      produces:
-      - "application/json"
-      responses:
-        '200':
-          description: "Explore page stories correctly loaded"
-          schema:
-            $ref: '#/definitions/StoryArray'
-        '400':
-          description: "Malformed request"
-        '302':
-          description: "User not logged in"
-    post:
-      operationId: exploreRange
-      consumes: 
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in : "body"
-        name: "body"
-        required: true
-        description: The dates of stories to be loaded
-        schema:
-          $ref: "#/definitions/Date"
       responses:
         '200':
           description: "Stories correctly loaded"
           schema:
-            $ref: '#/definitions/StoryArray'
-        '400':
-          description: "Malformed request"
-        '302':
-          description: "User not logged in"
-          
-  /story:
+            $ref: "#/definitions/Stories"
+        
+  #ANCHOR 
+  /writers-last-stories:
     get:
-      operationId: getStory
+      operationId: writers-last-stories
+      produces:
+      - "application/json"
+      responses:
+        '200':
+          description: "Stories correctly loaded"
+          schema:
+            $ref: "#/definitions/Stories"
+
+  #ANCHOR 
+  /stories-by-date:
+    get:
+      operationId: stories-by-date
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "start"
+        required: true
+        type: "string"
+      - in: "query"
+        name: "end"
+        required: true
+        type: "string"
+      responses:
+        '200':
+          description: "Stories correctly loaded"
+          schema:
+            $ref: "#/definitions/Stories"
+        '400':
+          description: "Error, wrong date!"
+
+  #ANCHOR 
+  /stories-by-writer:
+    get:
+      operationId: stories-by-writer
+      produces:
+      - "application/json"
+      parameters:
+      - in: "query"
+        name: "writer_id"
+        required: true
+        type: "integer"
+      - in: "query"
+        name: "user_id"
+        required: true
+        type: "integer"
+      responses:
+        '200':
+          description: "Stories correctly loaded"
+          schema:
+            $ref: "#/definitions/Stories"
+        '404':
+          description: "Not Found!"
+
+  #ANCHOR 
+  /following-stories/{user-id}:
+    get:
+      operationId: following-stories
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "user-id"
+        required: true
+        type: "integer"
+      responses:
+        '200':
+          description: "Stories correctly loaded"
+          schema:
+            $ref: "#/definitions/Stories"
+        '404':
+          description: "Not Found!"
+
+  #ANCHOR 
+  /retrieve-set-themes:
+    get:
+      operationId: retrieve-set-themes
+      produces:
+      - "application/json"
+      responses:
+        '200':
+          description: "Stories correctly loaded"
+          schema:
+            $ref: "#/definitions/RetrieveSetThemeResponse"
+        '404':
+          description: "Not Found!"          
+
+  #ANCHOR     
+  /story/{story-id}/{user-id}:
+    get:
+      operationId: getStoryByID
       consumes: 
       - "application/json"
       produces:
       - "application/json"
       parameters:
-      - in : "body"
-        name: "body"
+      - in : "path"
+        name: "story-id"
+        type: "integer"
         required: true
         description: Object containing story_id to retrieve
-        schema:
-          $ref: "#/definitions/StoryId"
+      - in : "path"
+        name: "user-id"
+        type: "integer"
+        required: true
+        description: ID of the user making the request
       responses:
         '200':
           description: "Story correctly loaded"
           schema:
             $ref: '#/definitions/Story'
-        '400':
-          description: "Malformed request"
-        '302':
-          description: "User not logged in"
+        '401':
+          description: "Not Authorized"
+        '404':
+          description: "Not Found!"
     delete:
       operationId: deleteStory
       consumes: 
@@ -88,93 +144,57 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - in : "body"
-        name: "body"
+      - in : "path"
+        name: "story-id"
+        type: "integer"
         required: true
-        description: Object containing story_id to delete
-        schema:
-          $ref: "#/definitions/StoryId"
+        description: Object containing story_id to retrieve
+      - in : "path"
+        name: "user-id"
+        type: "integer"
+        required: true
+        description: ID of the user making the request
       responses:
         '200':
           description: "Story correctly deleted"
-        '400':
-          description: "Malformed request"
-        '302':
+        '401':
+          description: "Not Authorized"
+        '404':
           description: "User not logged in"
-          
-  /story/random_story:
+  # ANCHOR    
+  /random_story/{user-id}:
     get:
       operationId: getRandomStory
       consumes: 
       - "application/json"
       produces:
       - "application/json"
+      parameters:
+      - in: "path"
+        name: "user-id"
+        required: true
+        type: "integer"
       responses:
         '200':
           description: "Random story correctly loaded"
           schema:
             $ref: '#/definitions/Story'
-        '400':
-          description: "Malformed request"
-        '302':
-          description: "User not logged in"
-          
-  /story/like:
-    put:
-      operationId: like
-      consumes: 
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in : "body"
-        name: "body"
-        required: true
-        description: Object containing story_id
-        schema:
-          $ref: "#/definitions/Reaction"
-      responses:
-        '200':
-          description: "Like added"
-        '400':
-          description: "Malformed request"
         '404':
-          description: "Story not valid"
-    delete:
-        operationId: remove_like
-        consumes: 
-        - "application/json"
-        produces:
-        - "application/json"
-        parameters:
-        - in : "body"
-          name: "body"
-          required: true
-          description: Object containing story_id
-          schema:
-            $ref: "#/definitions/Reaction"
-        responses:
-          '200':
-            description: "Like removed"
-          '400':
-            description: "Malformed request"
-          '404':
-            description: "Story not valid"   
+          description: "Not story found"
           
-  /story/dislike:
-    put:
+  # ANCHOR      
+  /dislike/{story-id}:
+    post:
       operationId: dislike
       consumes: 
       - "application/json"
       produces:
       - "application/json"
       parameters:
-      - in : "body"
-        name: "body"
+      - in: "path"
+        name: "story-id"
         required: true
-        description: Object containing story_id
-        schema:
-          $ref: "#/definitions/Reaction"
+        type: "integer"
       responses:
         '200':
           description: "Dislike added"
@@ -189,12 +209,10 @@ paths:
       produces:
       - "application/json"
       parameters:
-      - in : "body"
-        name: "body"
+      - in: "path"
+        name: "story-id"
         required: true
-        description: Object containing story_id
-        schema:
-          $ref: "#/definitions/Reaction"
+        type: "integer"
       responses:
         '200':
           description: "Dislike removed"
@@ -202,39 +220,72 @@ paths:
           description: "Malformed request"
         '404':
           description: "Story not valid"
-          
-  /new_story:
-    get:
-      operationId: get_dice
-      consumes: 
-      - "application/json"
-      produces:
-      - "application/json"
-      responses:
-        '200':
-          description: Object containing dice themes
-          schema:
-            $ref: "#/definitions/DiceThemes"
-        '400':
-          description: "Malformed request"  
+
+  # ANCHOR      
+  /like/{story-id}:
     post:
-      operationId: roll_dice
+      operationId: like
       consumes: 
       - "application/json"
       produces:
       - "application/json"
+      parameters:
+      - in: "path"
+        name: "story-id"
+        required: true
+        type: "integer"
       responses:
         '200':
-          description: Inizialized a new draft, return dice outcome
+          description: "like added"
+        '400':
+          description: "Malformed request"
+        '404':
+          description: "Story not valid"
+    delete:
+      operationId: remove_like
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in: "path"
+        name: "story-id"
+        required: true
+        type: "integer"
+      responses:
+        '200':
+          description: "like removed"
+        '400':
+          description: "Malformed request"
+        '404':
+          description: "Story not valid"
+
+  # ANCHOR        
+  /new-draft:
+    post:
+      operationId: new-draft
+      consumes: 
+      - "application/json"
+      produces:
+      - "application/json"
+      parameters:
+      - in : "body"
+        name: "body"
+        required: true
+        description: Object containing theme and dice number 
+        schema:
+          $ref: "#/definitions/Draft-definition"  
+      responses:
+        '200':
+          description: Inizialized a new draft, return a story_id
           schema:
-            $ref: "#/definitions/DiceOutcome"
-        '302':
-          description: Already a draft in progress with this theme
-          schema:
-            $ref: "#/definitions/Draft" 
+            $ref: "#/definitions/SingleStoryID"
+        '400':
+          description: Error
           
-  /write_story:
-    get:
+  # ANCHOR             
+  /write-story: 
+    put:
       operationId: write_story
       consumes: 
       - "application/json"
@@ -246,38 +297,14 @@ paths:
         required: true
         description: Object containing story_id
         schema:
-          $ref: "#/definitions/StoryId"
+          $ref: "#/definitions/Story"
       responses: 
         '200':
-          description: "Draft retrieved"
+          description: "Update the story by the given ID"
           schema:
             $ref: "#/definitions/Draft"
         '404':
-          description: "Can't write on this story"
-        '401':
-          description: "User is not the author of the story"    
-    post:
-      operationId: publish_story
-      consumes: 
-      - "application/json"
-      produces:
-      - "application/json"
-      parameters:
-      - in : "body"
-        name: "body"
-        required: true
-        description: Object containing the story
-        schema:
-          $ref: "#/definitions/Draft"
-      responses: 
-        '200':
-          description: "Story published"
-        '400':
-          description: "Title is needed in order to publish the story and you must use all the words of the outcome"
-        '418':
-          description: "I'm a teapot"
-        '302':
-          description: "Draft saved"
+          description: "Resource not found"
           
 definitions:
   Story:
@@ -303,6 +330,8 @@ definitions:
         type: "boolean"
       author_id:
         type: "integer"
+      author_name:
+        type: "string"
     required:
     - "story_id"
     - "title"
@@ -314,12 +343,28 @@ definitions:
     - "dislikes"
     - "published"
     - "author_id"
+    - "author_name"
     additionalProperties: false
+
+  Stories:
+    type: "object"
+    properties:
+      stories:
+       type: "array"
+       items:
+          $ref: "#/definitions/Story"
+
     
   StoryArray:
     type: "array"
     items:
       $ref: '#/definitions/Story'
+      
+  SingleStoryID:
+    type: "object"
+    properties:
+      story_id:
+        type: "integer"
       
   Date:
     type: "object"
@@ -342,8 +387,15 @@ definitions:
     - "story_id"
     additionalProperties: false
     
-  DiceThemes:
-    type: "string"
+  RetrieveSetThemeResponse:
+    type: "object"
+    properties:
+      themes:
+        type: "array"
+        items:
+          type: "string"
+      dice_number:
+        type: "integer"
     
   DiceOutcome:
     type: "string"
@@ -383,4 +435,13 @@ definitions:
     - "story_id"
     additionalProperties: false  
 
-          
+  Draft-definition:
+    type: "object"
+    properties:
+      theme:
+        type: "string"
+      dice_number: 
+        type: "integer"
+    required:
+    - "theme"
+    - "dice_number"
