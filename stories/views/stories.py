@@ -2,18 +2,14 @@ import datetime
 import json
 import re
 
-from monolith.database import db, Story, Like, Dislike, retrieve_themes, retrieve_dice_set, is_date, Follow, get_suggested_stories
-from monolith.background import async_like, async_dislike, async_remove_like, async_remove_dislike
-from monolith.auth import admin_required, current_user
-from monolith.classes.DiceSet import _throw_to_faces
+from stories.database import db, Story
 
 from flask import request, jsonify, abort
-from flask_login import current_user, login_user, logout_user, login_required
 from sqlalchemy.sql.expression import func
 
 from flakon import SwaggerBlueprint
 
-stories = SwaggerBlueprint('stories', __name__, swagger_spec='./stories/views/stories-specs.yaml')
+stories = SwaggerBlueprint('stories', 'stories', swagger_spec='./stories-specs.yaml')
 
 """
 This route returns, if the user is logged in, the list of stories of the followed writers
