@@ -224,7 +224,7 @@ paths:
                      
   /write-story: 
     put:
-      operationId: write_story
+      operationId: write-story
       consumes: 
       - "application/json"
       produces:
@@ -235,12 +235,10 @@ paths:
         required: true
         description: Object containing story_id
         schema:
-          $ref: "#/definitions/Story"
+          $ref: "#/definitions/SimplifiedStory"
       responses: 
         '200':
           description: "Update the story by the given ID"
-          schema:
-            $ref: "#/definitions/Draft"
         '404':
           description: "Resource not found"
           
@@ -281,6 +279,27 @@ definitions:
     - "dislikes"
     - "published"
     - "author_id"
+    - "author_name"
+    additionalProperties: false
+
+  SimplifiedStory:
+    type: "object"
+    properties:
+      story_id:
+        type: "integer"
+      title:
+        type: "string"
+      text:
+        type: "string"
+      published:
+        type: "boolean"
+      author_name:
+        type: "string"
+    required:
+    - "story_id"
+    - "title"
+    - "text"
+    - "published"
     - "author_name"
     additionalProperties: false
 
@@ -343,39 +362,18 @@ definitions:
     
   DiceOutcome:
     type: "string"
-  
-  Draft:
-    type: "object"
-    properties:
-      story_id:
-        type: "integer"
-      title:
-        type: "string"
-      text:
-        type: "string"
-      rolls_outcome:
-        type: "string"
-      theme:
-        type: "string"
-      published:
-        type: "boolean"
-      author_id:
-        type: "integer"
-    required:
-    - "story_id"
-    - "rolls_outcome"
-    - "theme"
-    - "author_id"
-    additionalProperties: false
 
   Draft-definition:
     type: "object"
     properties:
+      user_id:
+        type: "integer"
       theme:
         type: "string"
       dice_number: 
         type: "integer"
     required:
+    - "user_id"
     - "theme"
     - "dice_number"
     additionalProperties: false  

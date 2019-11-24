@@ -2,7 +2,7 @@ import datetime
 import json
 import re
 from jsonschema import validate, ValidationError
-from stories.database import db, Story, is_date, retrieve_themes
+from stories.database import db, Story, is_date, retrieve_themes, retrieve_dice_set, is_story_valid
 from flask import request, jsonify, abort
 from sqlalchemy.sql.expression import func
 
@@ -132,6 +132,67 @@ def removeDislike(story_id):
             db.session.commit()
             return "Dislike removed", 200
     return "Not Found!", 404
+
+@stories.operation('new-draft')
+def newDraft():
+    if general_validator('new-draft', request):
+        json_data= request.get_json()
+        user_id= json_data['user_id']
+        theme= json_data['theme']
+        dice_number= json_data['dice_number']
+        if theme not in retrieve_themes():
+            return abort(404, description="Theme not found")
+        story = Story.query.filter(Story.author_id == user_id).filter(Story.published == 0).filter(Story.theme == theme).first()
+        if story is not None:
+            return jsonify({'story_id': story.id})
+
+        dice_set = retrieve_dice_set(theme)
+        face_set = dice_set.throw()[:dice_number]
+        new_story = Story()
+        new_story.author_id = user_id
+        new_story.theme = theme
+        new_story.rolls_outcome = json.dumps(face_set)
+        db.session.add(new_story)
+        db.session.flush()
+        db.session.commit()
+        db.session.refresh(new_story)
+        return jsonify({'story_id': new_story.id})
+    else:
+        return abort(400)
+
+#Not tested yet
+@stories.operation('write-story')
+def newDraft():
+    if general_validator('write-story', request):
+        json_data= request.get_json()
+        story_id= json_data['story_id']
+        title= json_data['title']
+        text= json_data['text']
+        published= json_data['published']
+        author_name= json_data['author_name']
+        story = Story.query.filter_by(id=story_id).filter_by(published=0).first()
+        if story is None:
+            abort(404)
+        story.text = text
+        story.title = title
+        story.published = 1 if published == True else 0
+        if story.published == 1 and (story.title == "" or story.title == "None"):
+            db.session.rollback()
+            abort(400, description="You must complete the title in order to publish the story")
+
+        if story.published and not is_story_valid(story.text, story.rolls_outcome):
+            db.session.rollback()
+            abort(400, description="You must use all the words of the outcome!")
+        
+        if story.published == 0 and (story.title == "None" or len(story.title.replace(" ", ""))==0):
+            story.title="Draft("+str(story.theme)+")" 
+
+        db.session.commit()
+
+        return "", 200
+    else:
+        return abort(400)
+
 
 def general_validator(op_id, request):
     schema= stories.spec['paths']
