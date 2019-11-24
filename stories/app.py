@@ -1,7 +1,9 @@
-from stories.database import db, Story
+from stories.database import db, Story, Dice, retrieve_dice_set, retrieve_themes, store_dice_set
 from stories.views import blueprints
 from swagger_ui import api_doc
 from flakon import create_app
+from stories.classes.Die import Die
+from stories.classes.DiceSet import DiceSet
 
 def start(test = False):
     app = create_app(blueprints = blueprints)
@@ -44,6 +46,37 @@ def start(test = False):
             example.author_id = 1
             db.session.add(example)
             db.session.commit()
+
+        
+        # Create dice sets if missing.
+        themes = retrieve_themes()
+        if not themes:
+            die1 = Die(
+                ['angry', 'bag', 'bike', 'bird', 'crying', 'moonandstars'],
+                "N/A"
+            )
+            die2 = Die(
+                ['bus', 'coffee', 'happy', 'letter', 'paws', 'plate'],
+                "N/A"
+            )
+            die3 = Die(
+                ['caravan', 'clock', 'drink', 'mouth', 'tulip', 'whale'],
+                "N/A"
+            )
+            die4 = Die(
+                ['baloon', 'bananas', 'cat', 'icecream', 'pencil', 'phone'],
+                "N/A"
+            )
+            dice_set = DiceSet([die1, die2, die3], "Mountain")
+            store_dice_set(dice_set)
+            dice_set = DiceSet([die2, die3, die4], "Late night")
+            store_dice_set(dice_set)
+            dice_set = DiceSet([die3, die1, die4], "Travelers")
+            store_dice_set(dice_set)
+            dice_set = DiceSet([die2, die1, die4], "Youth")
+            store_dice_set(dice_set)
+            die = Die(["1", "2", "3"], "test_theme")
+            dice_set = DiceSet([die], "test_theme")
         
     return app
 

@@ -2,7 +2,7 @@ import datetime
 import json
 import re
 from jsonschema import validate, ValidationError
-from stories.database import db, Story, is_date
+from stories.database import db, Story, is_date, retrieve_themes
 from flask import request, jsonify, abort
 from sqlalchemy.sql.expression import func
 
@@ -60,6 +60,11 @@ def deleteStoryById(user_id, story_id):
     db.session.delete(story)
     db.session.commit()
     return "Story correctly deleted", 200
+
+@stories.operation('retrieve-set-themes')
+def retrieveSetThemes():
+    return jsonify({'themes' : retrieve_themes(), 'dice_number' : 6})
+
 
 def int_validator(string):
     try:

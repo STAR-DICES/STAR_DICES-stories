@@ -5,6 +5,7 @@ import json
 
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
+from stories.classes import Die, DiceSet
 
 db = SQLAlchemy()
 
@@ -48,3 +49,52 @@ def is_date(string):
 
     except ValueError:
         return False
+
+#### DICE model
+
+class Dice(db.Model):
+    __tablename__ = 'dice_set'
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    serialized_dice_set = db.Column(db.Unicode(1000), nullable=False)
+    theme = db.Column(db.Unicode(128))
+
+"""
+This function deserializes a dice set and creates a DiceSet object.
+"""
+def _deserialize_dice_set(json_dice_set, theme):
+    dice_set = json.loads(json_dice_set)
+    test = DiceSet.DiceSet([Die.Die(dice, theme) for dice in dice_set], theme)
+    return test
+
+"""
+This function returns a dice set from the database and deserializes it.
+"""
+def retrieve_dice_set(theme):
+    dice = db.session.query(Dice).filter(Dice.theme==theme).first()
+    if dice is None:
+        return None
+
+    json_dice_set = dice.serialized_dice_set
+    dice_set = _deserialize_dice_set(json_dice_set, dice.theme)
+    return dice_set
+
+"""
+This function returns a list of available dice set themes.
+"""
+def retrieve_themes():
+    themes = []
+    for row in db.session.query(Dice.theme.label('theme')).all():
+        themes.append(row.theme)
+
+    return themes
+
+"""
+This function serializes a new dice set and stores it into the database.
+"""
+def store_dice_set(dice_set):
+    db_entry = Dice()
+    db_entry.theme = dice_set.theme
+    db_entry.serialized_dice_set = json.dumps(dice_set.serialize())
+    db.session.add(db_entry)
+    db.session.commit()
