@@ -20,12 +20,23 @@ class Story(db.Model):
     dislikes = db.Column(db.Integer, default=0)
     published = db.Column(db.Boolean, default=False)
     # define foreign key 
-    author_id = db.Column(db.Integer, db.ForeignKey('user.id'))
-    author = relationship('User', foreign_keys='Story.author_id')
+    author_id = db.Column(db.Integer)
 
     def __init__(self, *args, **kw):
         super(Story, self).__init__(*args, **kw)
         self.date = dt.datetime.now()
+
+    def serialize(self):
+        return ({'id': self.id,
+                 'title': self.title,
+                 'text': self.text,
+                 'rolls_outcome': self.rolls_outcome,
+                 'theme': self.theme,
+                 'date': self.date,
+                 'likes': self.likes,
+                 'dislikes': self.dislikes,
+                 'published': self.published,
+                 'author_id': self.author_id})
 
 """
 This function is used to check that the input string is a valid date.
@@ -37,20 +48,3 @@ def is_date(string):
 
     except ValueError:
         return False
-"""
-This function is used to return the top 5 most liked stories that the user could be interested in.
-Returned stories are the ones that the user did not like/dislike yet and that are written with the same themes
-of the last 3 published stories of the user.
-"""
-def get_suggested_stories(user_id):
-    lastUsedThemes= [story.theme for story in db.session.query(Story).filter(Story.author_id == user_id).distinct()]
-    likedStories= [like.story_id for like in db.session.query(Like).filter(Like.liker_id==user_id)]
-    dislikedStories= [dislike.story_id for dislike in db.session.query(Dislike).filter(Dislike.disliker_id==user_id)]
-    suggestedStories= (db.session.query(Story).filter(Story.author_id != user_id)
-                                              .filter(Story.published==1)
-                                              .order_by(Story.likes.desc())
-                                              .all())
-    suggestedStories = [story for story in suggestedStories if story.id not in likedStories]
-    suggestedStories = [story for story in suggestedStories if story.id not in dislikedStories]
-    suggestedStories = [story for story in suggestedStories if story.theme in lastUsedThemes][:5]
-    return suggestedStories

@@ -1,7 +1,6 @@
 from stories.database import db, Story
 from stories.views import blueprints
-from stories import celeryApp
-
+from swagger_ui import api_doc
 from flakon import create_app
 
 def start(test = False):
@@ -16,25 +15,35 @@ def start(test = False):
         app.config['WTF_CSRF_ENABLED'] = False
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
+    api_doc(app, config_path='./stories-specs.yaml', url_prefix='/api', title='API doc')
     db.init_app(app)
     db.create_all(app=app)
     
-    celery = celeryApp.make_celery(app)
-    celeryApp.celery = celery
-    
     with app.app_context():
         # TODO Initialize env to test
-        example = Story()
-        example.title = 'My first story!'
-        example.rolls_outcome = '[["bike", "static/Mountain/bike.PNG"], ["bus", "static/Mountain/bus.PNG"]]'
-        example.text = 'With my bike, I am faster than a bus!!!!'
-        example.theme = 'Mountain'
-        example.published = 1
-        example.likes = 42
-        example.dislikes = 5
-        example.author_id = 1
-        db.session.add(example)
-        db.session.commit()
+        story= db.session.query(Story).first()
+        if story is None:
+            example = Story()
+            example.title = 'My first story!'
+            example.rolls_outcome = '["bike", "bus"]'
+            example.text = 'With my bike, I am faster than a bus!!!!'
+            example.theme = 'Mountain'
+            example.published = 0
+            example.likes = 42
+            example.dislikes = 5
+            example.author_id = 1
+            db.session.add(example)
+            example = Story()
+            example.title = 'My second story!'
+            example.rolls_outcome = '["bike", "bus"]'
+            example.text = 'With my bike, I am faster than a bus!!!!'
+            example.theme = 'Mountain'
+            example.published = 1
+            example.likes = 42
+            example.dislikes = 5
+            example.author_id = 1
+            db.session.add(example)
+            db.session.commit()
         
     return app
 

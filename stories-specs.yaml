@@ -6,19 +6,30 @@ info:
 schemes:
 - "http"
 paths:
-  #ANCHOR 
   /stories:
     get:
-      operationId: getStories
+      operationId: filter-stories
       produces:
       - "application/json"
+      parameters:
+      - in: "query"
+        name: "start"
+        type: "string"
+      - in: "query"
+        name: "end"
+        type: "string"
+      - in: "query"
+        name: "writer_id"
+        type: "integer"
+      - in: "query"
+        name: "drafts"
+        type: "boolean"
       responses:
         '200':
           description: "Stories correctly loaded"
           schema:
             $ref: "#/definitions/Stories"
         
-  #ANCHOR 
   /writers-last-stories:
     get:
       operationId: writers-last-stories
@@ -30,41 +41,13 @@ paths:
           schema:
             $ref: "#/definitions/Stories"
 
-  #ANCHOR 
-  /stories-by-date:
+  /following-stories/{user_id}:
     get:
-      operationId: stories-by-date
+      operationId: following-stories
       produces:
       - "application/json"
       parameters:
-      - in: "query"
-        name: "start"
-        required: true
-        type: "string"
-      - in: "query"
-        name: "end"
-        required: true
-        type: "string"
-      responses:
-        '200':
-          description: "Stories correctly loaded"
-          schema:
-            $ref: "#/definitions/Stories"
-        '400':
-          description: "Error, wrong date!"
-
-  #ANCHOR 
-  /stories-by-writer:
-    get:
-      operationId: stories-by-writer
-      produces:
-      - "application/json"
-      parameters:
-      - in: "query"
-        name: "writer_id"
-        required: true
-        type: "integer"
-      - in: "query"
+      - in: "path"
         name: "user_id"
         required: true
         type: "integer"
@@ -76,26 +59,6 @@ paths:
         '404':
           description: "Not Found!"
 
-  #ANCHOR 
-  /following-stories/{user-id}:
-    get:
-      operationId: following-stories
-      produces:
-      - "application/json"
-      parameters:
-      - in: "path"
-        name: "user-id"
-        required: true
-        type: "integer"
-      responses:
-        '200':
-          description: "Stories correctly loaded"
-          schema:
-            $ref: "#/definitions/Stories"
-        '404':
-          description: "Not Found!"
-
-  #ANCHOR 
   /retrieve-set-themes:
     get:
       operationId: retrieve-set-themes
@@ -109,22 +72,19 @@ paths:
         '404':
           description: "Not Found!"          
 
-  #ANCHOR     
-  /story/{story-id}/{user-id}:
+  /story/{story_id}/{user_id}:
     get:
-      operationId: getStoryByID
-      consumes: 
-      - "application/json"
+      operationId: get_story_by_id
       produces:
       - "application/json"
       parameters:
       - in : "path"
-        name: "story-id"
+        name: "story_id"
         type: "integer"
         required: true
         description: Object containing story_id to retrieve
       - in : "path"
-        name: "user-id"
+        name: "user_id"
         type: "integer"
         required: true
         description: ID of the user making the request
@@ -138,31 +98,31 @@ paths:
         '404':
           description: "Not Found!"
     delete:
-      operationId: deleteStory
+      operationId: delete_story_by_id
       consumes: 
       - "application/json"
       produces:
       - "application/json"
       parameters:
       - in : "path"
-        name: "story-id"
+        name: "story_id"
         type: "integer"
         required: true
         description: Object containing story_id to retrieve
       - in : "path"
-        name: "user-id"
+        name: "user_id"
         type: "integer"
         required: true
         description: ID of the user making the request
       responses:
-        '200':
+        '204':
           description: "Story correctly deleted"
         '401':
           description: "Not Authorized"
         '404':
-          description: "User not logged in"
-  # ANCHOR    
-  /random_story/{user-id}:
+          description: "Not found!"
+   
+  /random_story/{user_id}:
     get:
       operationId: getRandomStory
       consumes: 
@@ -171,7 +131,7 @@ paths:
       - "application/json"
       parameters:
       - in: "path"
-        name: "user-id"
+        name: "user_id"
         required: true
         type: "integer"
       responses:
@@ -181,9 +141,8 @@ paths:
             $ref: '#/definitions/Story'
         '404':
           description: "Not story found"
-          
-  # ANCHOR      
-  /dislike/{story-id}:
+              
+  /dislike/{story_id}:
     post:
       operationId: dislike
       consumes: 
@@ -192,7 +151,7 @@ paths:
       - "application/json"
       parameters:
       - in: "path"
-        name: "story-id"
+        name: "story_id"
         required: true
         type: "integer"
       responses:
@@ -210,7 +169,7 @@ paths:
       - "application/json"
       parameters:
       - in: "path"
-        name: "story-id"
+        name: "story_id"
         required: true
         type: "integer"
       responses:
@@ -220,9 +179,8 @@ paths:
           description: "Malformed request"
         '404':
           description: "Story not valid"
-
-  # ANCHOR      
-  /like/{story-id}:
+      
+  /like/{story_id}:
     post:
       operationId: like
       consumes: 
@@ -231,7 +189,7 @@ paths:
       - "application/json"
       parameters:
       - in: "path"
-        name: "story-id"
+        name: "story_id"
         required: true
         type: "integer"
       responses:
@@ -249,7 +207,7 @@ paths:
       - "application/json"
       parameters:
       - in: "path"
-        name: "story-id"
+        name: "story_id"
         required: true
         type: "integer"
       responses:
@@ -259,8 +217,7 @@ paths:
           description: "Malformed request"
         '404':
           description: "Story not valid"
-
-  # ANCHOR        
+      
   /new-draft:
     post:
       operationId: new-draft
@@ -282,8 +239,7 @@ paths:
             $ref: "#/definitions/SingleStoryID"
         '400':
           description: Error
-          
-  # ANCHOR             
+                     
   /write-story: 
     put:
       operationId: write_story
@@ -353,8 +309,10 @@ definitions:
        type: "array"
        items:
           $ref: "#/definitions/Story"
+    required:
+    - "stories"
+    additionalProperties: false
 
-    
   StoryArray:
     type: "array"
     items:
@@ -396,6 +354,10 @@ definitions:
           type: "string"
       dice_number:
         type: "integer"
+    required:
+    - "themes"
+    - "dice_number"
+    additionalProperties: false
     
   DiceOutcome:
     type: "string"
@@ -423,17 +385,6 @@ definitions:
     - "theme"
     - "author_id"
     additionalProperties: false
-      
-  Reaction:
-    type: "object"
-    properties:
-      story_id:
-        type: "integer"
-      remove_opposite:
-        type: "boolean"
-    required:
-    - "story_id"
-    additionalProperties: false  
 
   Draft-definition:
     type: "object"
@@ -445,3 +396,4 @@ definitions:
     required:
     - "theme"
     - "dice_number"
+    additionalProperties: false  
