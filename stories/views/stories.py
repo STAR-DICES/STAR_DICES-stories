@@ -2,7 +2,7 @@ import datetime
 import json
 import re
 from jsonschema import validate, ValidationError
-from stories.database import db, Story, is_date, retrieve_themes, retrieve_dice_set, is_story_valid
+from stories.database import db, Story, is_date, retrieve_themes, retrieve_dice_set
 from flask import request, jsonify, abort
 from sqlalchemy.sql.expression import func
 
@@ -162,7 +162,7 @@ def newDraft():
 
 #Not tested yet
 @stories.operation('write-story')
-def newDraft():
+def writeStory():
     if general_validator('write-story', request):
         json_data= request.get_json()
         story_id= json_data['story_id']
@@ -210,3 +210,10 @@ def general_validator(op_id, request):
                         return False
                 else:
                      return True
+
+def is_story_valid(story_text, dice_roll):
+    split_story_text = re.findall(r"[\w']+|[.,!?;]", story_text.lower())
+    for word in dice_roll:
+        if word.lower() not in split_story_text:
+            return False
+    return True
