@@ -218,7 +218,7 @@ paths:
         '200':
           description: Inizialized a new draft, return a story_id
           schema:
-            $ref: "#/definitions/SingleStoryID"
+            $ref: "#/definitions/StoryId"
         '400':
           description: Error
                      
@@ -318,12 +318,6 @@ definitions:
     type: "array"
     items:
       $ref: '#/definitions/Story'
-      
-  SingleStoryID:
-    type: "object"
-    properties:
-      story_id:
-        type: "integer"
       
   Date:
     type: "object"
