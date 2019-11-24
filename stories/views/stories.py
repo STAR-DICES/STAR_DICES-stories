@@ -16,6 +16,7 @@ def getStories():
     drafts=request.args.get('drafts')
     start=request.args.get('start')
     end=request.args.get('end')
+    
     stories=db.session.query(Story).order_by(Story.date.desc())
     if writer_id is not None:
         stories = stories.filter(Story.author_id == writer_id)
@@ -65,14 +66,73 @@ def deleteStoryById(user_id, story_id):
 def retrieveSetThemes():
     return jsonify({'themes' : retrieve_themes(), 'dice_number' : 6})
 
+@stories.operation('writers-last-stories')
+def getWritersLastStories():
+    stories=db.session.query(Story).filter_by(published=1).group_by(Story.author_id)
+    return jsonify({'stories': [obj.serialize() for obj in stories]})
 
 def int_validator(string):
     try:
         value= int(string)
-    except ValueError:
+    except (ValueError, TypeError):
         return None
     return value
-        
+
+@stories.operation('get-random-story')
+def getRandomStory(user_id):
+    user_id = int_validator(user_id)
+    if user_id  is None:
+        return "Not Found!", 404 
+    story = Story.query.filter(Story.author_id != user_id).filter_by(published=1).order_by(func.random()).first()
+    if story is None:
+        return "Not Found!", 404
+    else:
+        return jsonify(story.serialize())
+
+@stories.operation('like')
+def addLike(story_id):
+    story_id = int_validator(story_id)
+    if story_id is not None:
+        story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
+        if story is not None:
+            story.likes+=1
+            db.session.commit()
+            return "Like added", 201
+    return "Not Found!", 404
+
+@stories.operation('remove_like')
+def removeLike(story_id):
+    story_id = int_validator(story_id)
+    if story_id is not None:
+        story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
+        if story is not None:
+            story.likes-=1
+            db.session.commit()
+            return "Like removed", 200
+    return "Not Found!", 404
+
+@stories.operation('dislike')
+def addDislike(story_id):
+    story_id = int_validator(story_id)
+    if story_id is not None:
+        story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
+        if story is not None:
+            story.dislikes+=1
+            db.session.commit()
+            return "Dislike added", 200
+    return "Not Found!", 404
+
+@stories.operation('remove_like')
+def removeDislike(story_id):
+    story_id = int_validator(story_id)
+    if story_id is not None:
+        story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
+        if story is not None:
+            story.dislikes-=1
+            db.session.commit()
+            return "Dislike removed", 200
+    return "Not Found!", 404
+
 def general_validator(op_id, request):
     schema= stories.spec['paths']
     for endpoint in schema.keys():

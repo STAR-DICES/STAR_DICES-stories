@@ -43,6 +43,26 @@ def start(test = False):
             example.published = 1
             example.likes = 42
             example.dislikes = 5
+            example.author_id = 2
+            db.session.add(example)
+            example = Story()
+            example.title = 'My third story!'
+            example.rolls_outcome = '["bike", "bus"]'
+            example.text = 'With my bike, I am faster than a bus!!!!'
+            example.theme = 'Mountain'
+            example.published = 1
+            example.likes = 42
+            example.dislikes = 5
+            example.author_id = 1
+            db.session.add(example)
+            example = Story()
+            example.title = 'My fourth story!'
+            example.rolls_outcome = '["bike", "bus"]'
+            example.text = 'With my bike, I am faster than a bus!!!!'
+            example.theme = 'Mountain'
+            example.published = 1
+            example.likes = 42
+            example.dislikes = 5
             example.author_id = 1
             db.session.add(example)
             db.session.commit()

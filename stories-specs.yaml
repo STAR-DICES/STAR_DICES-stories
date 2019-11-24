@@ -124,9 +124,7 @@ paths:
    
   /random_story/{user_id}:
     get:
-      operationId: getRandomStory
-      consumes: 
-      - "application/json"
+      operationId: get-random-story
       produces:
       - "application/json"
       parameters:
@@ -140,13 +138,11 @@ paths:
           schema:
             $ref: '#/definitions/Story'
         '404':
-          description: "Not story found"
+          description: "Not Found!"
               
   /dislike/{story_id}:
     post:
       operationId: dislike
-      consumes: 
-      - "application/json"
       produces:
       - "application/json"
       parameters:
@@ -157,14 +153,10 @@ paths:
       responses:
         '200':
           description: "Dislike added"
-        '400':
-          description: "Malformed request"
         '404':
-          description: "Story not valid"
+          description: "Not Found!"
     delete:
       operationId: remove_dislike
-      consumes: 
-      - "application/json"
       produces:
       - "application/json"
       parameters:
@@ -175,16 +167,12 @@ paths:
       responses:
         '200':
           description: "Dislike removed"
-        '400':
-          description: "Malformed request"
         '404':
-          description: "Story not valid"
+          description: "Not Found!"
       
   /like/{story_id}:
     post:
       operationId: like
-      consumes: 
-      - "application/json"
       produces:
       - "application/json"
       parameters:
@@ -194,15 +182,11 @@ paths:
         type: "integer"
       responses:
         '200':
-          description: "like added"
-        '400':
-          description: "Malformed request"
+          description: "Like added"
         '404':
-          description: "Story not valid"
+          description: "Not Found!"
     delete:
       operationId: remove_like
-      consumes: 
-      - "application/json"
       produces:
       - "application/json"
       parameters:
@@ -212,11 +196,9 @@ paths:
         type: "integer"
       responses:
         '200':
-          description: "like removed"
-        '400':
-          description: "Malformed request"
+          description: "Like removed"
         '404':
-          description: "Story not valid"
+          description: "Not Found!"
       
   /new-draft:
     post:
