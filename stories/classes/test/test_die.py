@@ -2,7 +2,7 @@ import unittest
 import random
 import os
 
-from monolith.classes.Die import Die
+from stories.classes.Die import Die
  
 class TestDie(unittest.TestCase):
 

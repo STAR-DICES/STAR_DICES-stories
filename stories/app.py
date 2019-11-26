@@ -4,6 +4,7 @@ from swagger_ui import api_doc
 from flakon import create_app
 from stories.classes.Die import Die
 from stories.classes.DiceSet import DiceSet
+from stories import celeryApp
 
 def start(test = False):
     app = create_app(blueprints = blueprints)
@@ -20,6 +21,9 @@ def start(test = False):
     api_doc(app, config_path='./stories/stories-specs.yaml', url_prefix='/api', title='API doc')
     db.init_app(app)
     db.create_all(app=app)
+    
+    celery = celeryApp.make_celery(app)
+    celeryApp.celery = celery
     
     with app.app_context():
         # TODO Initialize env to test
