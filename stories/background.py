@@ -1,7 +1,8 @@
 from flask_login import current_user
 from flask import current_app
-from monolith.database import db, User, Story
-from monolith import celeryApp
+
+from stories.database import db, Story
+from stories import celeryApp
 from celery import shared_task
 
 celery = celeryApp.celery
@@ -12,7 +13,7 @@ story_id is the id of the story to like
 dislike_present represents whether or not to also remove a dislike
 '''
 @shared_task
-def async_like(story_id, dislike_present=False):
+def async_like(story_id):
     if current_app.config['TESTING']:
         (current_user.id)
     try:
@@ -20,8 +21,6 @@ def async_like(story_id, dislike_present=False):
     except: # pragma: no cover
         return -1
     story.likes += 1
-    if dislike_present:
-        story.dislikes -= 1
     db.session.commit()
     if current_app.config['TESTING']:
         (current_user.id)
@@ -32,7 +31,7 @@ story_id is the id of the story to like
 dislike_present represents whether or not to also remove a like
 '''
 @shared_task
-def async_dislike(story_id, like_present=False):
+def async_dislike(story_id):
     if current_app.config['TESTING']:
         (current_user.id)
     try:
@@ -40,8 +39,6 @@ def async_dislike(story_id, like_present=False):
     except: # pragma: no cover
         return -1
     story.dislikes += 1
-    if like_present:
-        story.likes -= 1
     db.session.commit()
     if current_app.config['TESTING']:
         (current_user.id)
