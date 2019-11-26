@@ -3,7 +3,7 @@ MAINTAINER Stefano Duo <duostefano93@gmail.com>
 RUN apt-get update && apt-get install -y git python3.6 python3-pip
 COPY requirements.txt .
 RUN pip3 install -r requirements.txt
-RUN apt-get install rabbitmq-server
+RUN apt-get install -y rabbitmq-server
 WORKDIR /STAR_DICES-stories
 COPY . .
 RUN python3 setup.py develop
