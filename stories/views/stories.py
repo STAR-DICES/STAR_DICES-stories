@@ -110,8 +110,9 @@ def addLike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            story.likes+=1
-            db.session.commit()
+            async_like(story_id).delay()
+            #story.likes+=1
+            #db.session.commit()
             return "Like added", 201
     return "Not Found!", 404
 
@@ -121,8 +122,9 @@ def removeLike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            story.likes-=1
-            db.session.commit()
+            async_remove_like(story_id).delay()
+            #story.likes-=1
+            #db.session.commit()
             return "Like removed", 200
     return "Not Found!", 404
 
@@ -132,6 +134,7 @@ def addDislike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
+            async_dislike(story_id).delay()
             story.dislikes+=1
             db.session.commit()
             return "Dislike added", 200
@@ -143,8 +146,9 @@ def removeDislike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            story.dislikes-=1
-            db.session.commit()
+            async_remove_dislike(story_id).delay()
+            #story.dislikes-=1
+            #db.session.commit()
             return "Dislike removed", 200
     return "Not Found!", 404
 
