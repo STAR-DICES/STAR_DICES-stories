@@ -5,6 +5,7 @@ from flakon import create_app
 from stories.classes.Die import Die
 from stories.classes.DiceSet import DiceSet
 from stories import celeryApp
+import subprocess
 
 def start(test = False):
     app = create_app(blueprints = blueprints)
@@ -110,5 +111,7 @@ def start(test = False):
 
 
 if __name__ == '__main__':
+    bashCommand = "celery -A stories.celeryApp.worker.celery worker" 
+    process = subprocess.Popen(bashCommand.split())
     app = start()
     app.run(host='0.0.0.0')
