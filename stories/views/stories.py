@@ -19,7 +19,6 @@ def getStories():
     drafts=request.args.get('drafts')
     start=request.args.get('start')
     end=request.args.get('end')
-    json_data = r.json()['following_ids']
     stories=db.session.query(Story).order_by(Story.date.desc())
     if writer_id is not None:
         stories = stories.filter(Story.author_id == writer_id)
@@ -121,7 +120,7 @@ def removeLike(story_id):
             # Use asynch celery
             #story.likes-=1
             #db.session.commit()
-            return "Like removed", 200
+            return "Like removed", 201
     return "Not Found!", 404
 
 @stories.operation('dislike')
@@ -147,7 +146,7 @@ def removeDislike(story_id):
             # Use asynch celery
             #story.dislikes-=1
             #db.session.commit()
-            return "Dislike removed", 200
+            return "Dislike removed", 201
     return "Not Found!", 404
 
 @stories.operation('new-draft')

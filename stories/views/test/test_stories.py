@@ -108,7 +108,7 @@ class TestAuth(TestHelper):
         self.assertEqual(reply.status_code, 404)
         
         reply = self.client.delete("/like/1")
-        self.assertEqual(reply.status_code, 200)
+        self.assertEqual(reply.status_code, 201)
         with self.context:
             s = Story.query.filter_by(id=1).first()
             self.assertEqual(s.likes, 43)
@@ -131,7 +131,7 @@ class TestAuth(TestHelper):
         self.assertEqual(reply.status_code, 404)
         
         reply = self.client.delete("/dislike/1")
-        self.assertEqual(reply.status_code, 200)
+        self.assertEqual(reply.status_code, 201)
         with self.context:
             s = Story.query.filter_by(id=1).first()
             self.assertEqual(s.dislikes, 6)  
