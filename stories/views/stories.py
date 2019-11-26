@@ -1,6 +1,7 @@
 import datetime
 import json
 import re
+import requests
 from jsonschema import validate, ValidationError
 from stories.database import db, Story, is_date, retrieve_themes, retrieve_dice_set
 from flask import request, jsonify, abort
@@ -8,7 +9,8 @@ from sqlalchemy.sql.expression import func
 
 from flakon import SwaggerBlueprint
 
-stories = SwaggerBlueprint('stories', 'stories', swagger_spec='./stories-specs.yaml')
+stories = SwaggerBlueprint('stories', 'stories', swagger_spec='./stories/stories-specs.yaml')
+follows_url= 'http://127.0.0.1:5000'
 
 @stories.operation('filter-stories')
 def getStories():
@@ -88,6 +90,17 @@ def getRandomStory(user_id):
         return "Not Found!", 404
     else:
         return jsonify(story.serialize())
+
+@stories.operation('following-stories')
+def getFollowingStories(user_id):
+    user_id = int_validator(user_id)
+    try:
+        r = requests.get(follows_url + "/following-list/" + str(user_id))
+    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
+        abort(500)
+    json_data = r.json()['following_ids']
+    following_stories= db.session.query(Story).filter(Story.published==1).filter(Story.author_id.in_(json_data)).order_by(Story.date.desc()).all()
+    return jsonify({'stories': [obj.serialize() for obj in following_stories]})
 
 @stories.operation('like')
 def addLike(story_id):

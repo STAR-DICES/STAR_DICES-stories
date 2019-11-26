@@ -17,7 +17,7 @@ def start(test = False):
         app.config['WTF_CSRF_ENABLED'] = False
         app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
     
-    api_doc(app, config_path='./stories-specs.yaml', url_prefix='/api', title='API doc')
+    api_doc(app, config_path='./stories/stories-specs.yaml', url_prefix='/api', title='API doc')
     db.init_app(app)
     db.create_all(app=app)
     
@@ -37,7 +37,7 @@ def start(test = False):
             db.session.add(example)
             example = Story()
             example.title = 'My second story!'
-            example.rolls_outcome = '["bike", "bus"]'
+            example.rolls_outcome = '[["bike", "static/Mountain/bike.PNG"], ["bus", "static/Mountain/bus.PNG"]]'
             example.text = 'With my bike, I am faster than a bus!!!!'
             example.theme = 'Mountain'
             example.published = 1
@@ -47,7 +47,7 @@ def start(test = False):
             db.session.add(example)
             example = Story()
             example.title = 'My third story!'
-            example.rolls_outcome = '["bike", "bus"]'
+            example.rolls_outcome = '[["bike", "static/Mountain/bike.PNG"], ["bus", "static/Mountain/bus.PNG"]]'
             example.text = 'With my bike, I am faster than a bus!!!!'
             example.theme = 'Mountain'
             example.published = 1
@@ -58,7 +58,7 @@ def start(test = False):
             example = Story()
             example.title = 'My fourth story!'
             example.rolls_outcome = '["bike", "bus"]'
-            example.text = 'With my bike, I am faster than a bus!!!!'
+            example.rolls_outcome = '[["bike", "static/Mountain/bike.PNG"], ["bus", "static/Mountain/bus.PNG"]]'
             example.theme = 'Mountain'
             example.published = 1
             example.likes = 42
@@ -103,4 +103,4 @@ def start(test = False):
 
 if __name__ == '__main__':
     app = start()
-    app.run()
+    app.run(port='5001')
