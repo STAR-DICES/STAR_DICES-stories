@@ -30,7 +30,7 @@ def start(test = False):
             example.rolls_outcome = '["bike", "bus"]'
             example.text = 'With my bike, I am faster than a bus!!!!'
             example.theme = 'Mountain'
-            example.published = 0
+            example.published = 1
             example.likes = 42
             example.dislikes = 5
             example.author_id = 1
@@ -103,4 +103,4 @@ def start(test = False):
 
 if __name__ == '__main__':
     app = start()
-    app.run(port='5001')
+    app.run()
