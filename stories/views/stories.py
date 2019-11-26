@@ -153,6 +153,7 @@ def newDraft():
     if general_validator('new-draft', request):
         json_data= request.get_json()
         user_id= json_data['user_id']
+        author_name= json_data['author_name']
         theme= json_data['theme']
         dice_number= json_data['dice_number']
         if theme not in retrieve_themes():
@@ -166,6 +167,7 @@ def newDraft():
         new_story = Story()
         new_story.author_id = user_id
         new_story.theme = theme
+        new_story.author_name = author_name
         new_story.rolls_outcome = json.dumps(face_set)
         db.session.add(new_story)
         db.session.flush()
@@ -184,7 +186,6 @@ def writeStory():
         title= json_data['title']
         text= json_data['text']
         published= json_data['published']
-        author_name= json_data['author_name']
         story = Story.query.filter_by(id=story_id).filter_by(published=0).first()
         if story is None:
             abort(404)

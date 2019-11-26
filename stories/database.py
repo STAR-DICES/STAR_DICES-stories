@@ -20,7 +20,7 @@ class Story(db.Model):
     likes = db.Column(db.Integer, default=0)
     dislikes = db.Column(db.Integer, default=0)
     published = db.Column(db.Boolean, default=False)
-    # define foreign key 
+    author_name=  db.Column(db.Unicode(50))
     author_id = db.Column(db.Integer)
 
     def __init__(self, *args, **kw):
@@ -37,7 +37,8 @@ class Story(db.Model):
                  'likes': self.likes,
                  'dislikes': self.dislikes,
                  'published': self.published,
-                 'author_id': self.author_id})
+                 'author_id': self.author_id,
+                 'author_name': self.author_name})
 
 """
 This function is used to check that the input string is a valid date.

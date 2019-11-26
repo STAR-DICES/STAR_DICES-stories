@@ -293,14 +293,11 @@ definitions:
         type: "string"
       published:
         type: "boolean"
-      author_name:
-        type: "string"
     required:
     - "story_id"
     - "title"
     - "text"
     - "published"
-    - "author_name"
     additionalProperties: false
 
   Stories:
@@ -362,12 +359,15 @@ definitions:
     properties:
       user_id:
         type: "integer"
+      author_name:
+        type: "string"
       theme:
         type: "string"
       dice_number: 
         type: "integer"
     required:
     - "user_id"
+    - "author_name"
     - "theme"
     - "dice_number"
     additionalProperties: false  
