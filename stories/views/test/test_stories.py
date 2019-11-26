@@ -8,6 +8,13 @@ class TestAuth(TestHelper):
     def test_stories(self):
         
         # all stories
+        reply = self.client.get("/stories")
+        self.assertEqual(reply.status_code, 200)
+        json = reply.json
+        story_list = json['stories']
+        self.assertEqual(len(story_list), 4)
+        
+        # all stories by writer
         reply = self.client.get("/stories?writer_id=1")
         self.assertEqual(reply.status_code, 200)
         json = reply.json
@@ -15,13 +22,13 @@ class TestAuth(TestHelper):
         self.assertEqual(len(story_list), 3)
         
         # filter and get correct story
-        reply = self.client.get("/stories?start=" + "01/01/1999" + "&end=" + "09/09/2222" + "&writer_id=1")
+        reply = self.client.get("/stories?start=" + "1999/01/01" + "&end=" + "2222/01/01" + "&writer_id=1")
         self.assertEqual(reply.status_code, 200)
+        json = reply.json
+        story_list = json['stories']
+        self.assertEqual(len(story_list), 3)
         
-        reply = self.client.get("/stories?start=" + "01/01/2200" + "&end=" + "09/09/2222" + "&writer_id=1")
-        self.assertEqual(reply.status_code, 200)
         # get also drafts
-        
         reply = self.client.get("/stories?writer_id=1" + "&drafts=True")
         json = reply.json
         story_list = json['stories']
@@ -61,10 +68,27 @@ class TestAuth(TestHelper):
     def test_random_story(self):
         
         reply = self.client.get("/random-story/1")
-        self.assertEqual(reply.status_code, 200) #FIXME
+        self.assertEqual(reply.status_code, 200)
         
-    #def test_get_following_stories(self):
-        #TODO Stub
+    def test_get_following_stories(self):
+        
+        # TIMEOUT
+        reply = self.client.get("/following-stories/1")
+        self.assertEqual(reply.status_code, 500) 
+        
+        reply = self.client.get("/following-stories/beh")
+        self.assertEqual(reply.status_code, 404) 
+        
+    def test_get_writers_last_story(self):
+        
+        reply = self.client.get("/writers-last-stories")
+        self.assertEqual(reply.status_code, 200)
+        json = reply.json
+        story_list = json['stories']
+        self.assertEqual(len(story_list), 2)
+        
+        self.assertEqual(story_list[0]['id'], 4)
+        self.assertEqual(story_list[1]['id'], 2)
         
     def test_add_remove_like(self):
         
