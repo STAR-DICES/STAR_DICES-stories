@@ -12,7 +12,6 @@ from flakon import SwaggerBlueprint
 
 stories = SwaggerBlueprint('stories', 'stories', swagger_spec='./stories/stories-specs.yaml')
 follows_url= 'http://follows:5000'
-auth_url= 'http://auth:5000'
 
 @stories.operation('filter-stories')
 def getStories():
@@ -20,12 +19,6 @@ def getStories():
     drafts=request.args.get('drafts')
     start=request.args.get('start')
     end=request.args.get('end')
-    try:
-        r = requests.get(auth_url + "/user-exists/" + str(writer_id))
-        if r.status_code == 404:
-            return 404
-    except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
-        abort(500)
     json_data = r.json()['following_ids']
     stories=db.session.query(Story).order_by(Story.date.desc())
     if writer_id is not None:
