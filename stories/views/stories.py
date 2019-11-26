@@ -199,8 +199,9 @@ def writeStory():
         if story.published == 1 and (story.title == "" or story.title == "None"):
             db.session.rollback()
             abort(400, description="You must complete the title in order to publish the story")
-
-        if story.published and not is_story_valid(story.text, story.rolls_outcome):
+        rolls_outcome = json.loads(story.rolls_outcome)
+        faces = [roll[0] for roll in rolls_outcome]
+        if story.published == 1 and not is_story_valid(story.text, faces):
             db.session.rollback()
             abort(400, description="You must use all the words of the outcome!")
         
