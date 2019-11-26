@@ -33,7 +33,7 @@ class Story(db.Model):
                  'text': self.text,
                  'rolls_outcome': self.rolls_outcome,
                  'theme': self.theme,
-                 'date': self.date,
+                 'date': self.date.strftime("%d/%m/%Y %H:%M"),
                  'likes': self.likes,
                  'dislikes': self.dislikes,
                  'published': self.published,
