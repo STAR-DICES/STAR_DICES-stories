@@ -1,8 +1,8 @@
 import unittest
 import random
 
-from monolith.classes.Die import Die
-from monolith.classes.DiceSet import DiceSet, _throw_to_faces
+from stories.classes.Die import Die
+from stories.classes.DiceSet import DiceSet, _throw_to_faces
 
 class TestDie(unittest.TestCase):
 

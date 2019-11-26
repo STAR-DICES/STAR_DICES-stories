@@ -151,7 +151,7 @@ paths:
         required: true
         type: "integer"
       responses:
-        '200':
+        '201':
           description: "Dislike added"
         '404':
           description: "Not Found!"
@@ -181,7 +181,7 @@ paths:
         required: true
         type: "integer"
       responses:
-        '200':
+        '201':
           description: "Like added"
         '404':
           description: "Not Found!"

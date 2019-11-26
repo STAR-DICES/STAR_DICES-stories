@@ -6,6 +6,7 @@ from jsonschema import validate, ValidationError
 from stories.database import db, Story, is_date, retrieve_themes, retrieve_dice_set
 from flask import request, jsonify, abort
 from sqlalchemy.sql.expression import func
+from stories.background import async_like, async_dislike, async_remove_like, async_remove_dislike
 
 from flakon import SwaggerBlueprint
 
@@ -110,8 +111,10 @@ def addLike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            story.likes+=1
-            db.session.commit()
+            async_like.delay(story_id)
+            # Use asynch celery
+            #story.likes+=1
+            #db.session.commit()
             return "Like added", 201
     return "Not Found!", 404
 
@@ -121,8 +124,10 @@ def removeLike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            story.likes-=1
-            db.session.commit()
+            async_remove_like.delay(story_id)
+            # Use asynch celery
+            #story.likes-=1
+            #db.session.commit()
             return "Like removed", 200
     return "Not Found!", 404
 
@@ -132,9 +137,11 @@ def addDislike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            story.dislikes+=1
-            db.session.commit()
-            return "Dislike added", 200
+            async_dislike.delay(story_id)
+            # Use asynch celery
+            #story.dislikes+=1
+            #db.session.commit()
+            return "Dislike added", 201
     return "Not Found!", 404
 
 @stories.operation('remove_dislike')
@@ -143,8 +150,10 @@ def removeDislike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            story.dislikes-=1
-            db.session.commit()
+            async_remove_dislike.delay(story_id)
+            # Use asynch celery
+            #story.dislikes-=1
+            #db.session.commit()
             return "Dislike removed", 200
     return "Not Found!", 404
 

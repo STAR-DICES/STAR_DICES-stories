@@ -1,156 +1,143 @@
-from monolith.views.test.TestHelper import TestHelper
-from monolith.database import db, User, Story
+from stories.views.test.TestHelper import TestHelper
+from stories.database import db, Story
+import json
 
 class TestAuth(TestHelper):
 
 
-    def test_home(self):
-    
-        # error: user anonymous
-        reply = self.client.get('/', follow_redirects=True)
-        self.assert_template_used("login.html")
+    def test_stories(self):
         
-        # success: render home.html
-        self._login("example@example.com", "admin")
-        reply = self.client.get('/', follow_redirects=True)
+        # all stories
+        reply = self.client.get("/stories?writer_id=1")
         self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("home.html")
+        json = reply.json
+        story_list = json['stories']
+        self.assertEqual(len(story_list), 3)
         
-    def test_explore(self):
-        
-        # error: user anonymous
-        reply = self.client.get('/explore', follow_redirects=True)
-        self.assert_template_used("login.html")
-        
-        # success: render explore.html
-        self._login("example@example.com", "admin")
-        reply = self.client.get('/explore', follow_redirects=True)
+        # filter and get correct story
+        reply = self.client.get("/stories?start=" + "01/01/1999" + "&end=" + "09/09/2222" + "&writer_id=1")
         self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("explore.html")
         
-    def test_single_story(self):
+        reply = self.client.get("/stories?start=" + "01/01/2200" + "&end=" + "09/09/2222" + "&writer_id=1")
+        self.assertEqual(reply.status_code, 200)
+        # get also drafts
         
-        # error: user anonymous
-        reply = self.client.get('/story/1', follow_redirects=True)
-        self.assertEqual(reply.status_code, 401)
+        reply = self.client.get("/stories?writer_id=1" + "&drafts=True")
+        json = reply.json
+        story_list = json['stories']
+        self.assertEqual(len(story_list), 3)
         
-        # error: story_id not valid
-        self._login("example@example.com", "admin")
-        reply = self.client.get('/story/5', follow_redirects=True)
-        self.assert_template_used("message.html")
-        self.assert_context("message", "Ooops.. Story not found!")
         
-        # success: render story.html
-        reply = self.client.get('/story/1', follow_redirects=True)
-        self.assert_template_used("story.html")
+    def test_get_story(self):
         
-    def test_delete_story(self):
+        reply = self.client.get("/story/1/1")
+        self.assertEqual(reply.status_code, 200)
+        story = json.loads(reply.data)
+        self.assertEqual(story['id'], 1)
         
-        # error: story_id not valid
-        self._login("example@example.com", "admin")
-        reply = self.client.get('/story/5/delete')
+        reply = self.client.get("/story/5/1")
         self.assertEqual(reply.status_code, 404)
         
-        # error: user not author
-        self._logout()
-        self._signup("example3@example.com", "thecakeisalie", "GLaDOS", "unknown", "01/01/1964", True)
-        self._login("example3@example.com", "thecakeisalie")
-        reply = self.client.get('/story/1/delete')
-        self.assertEqual(reply.status_code, 401)
+    def test_delete_story(self):
+    
+        # not existing story
+        reply = self.client.delete("/story/5/1")
+        self.assertEqual(reply.status_code, 404) 
         
-        # success: render message.html
-        self._logout()
-        self._login("example@example.com", "admin")
-        reply = self.client.get('/story/1/delete')
-        self.assert_template_used("message.html")
-        self.assert_context("message", "Story sucessfully deleted")
-        with self.context:
-            s = Story.query.filter_by(id=1).first()
-            self.assertIsNone(s)
+        # not the author
+        reply = self.client.delete("/story/1/5")
+        self.assertEqual(reply.status_code, 401)  
+        
+        reply = self.client.delete("/story/3/1")
+        self.assertEqual(reply.status_code, 200)       
+        
+    def test_retrieve_set(self):
+    
+        reply = self.client.get("/retrieve-set-themes")
+        themes = json.loads(reply.data)
+        self.assertEqual(themes['dice_number'], 6)
+        self.assertEqual(len(themes['themes']), 4)
         
     def test_random_story(self):
         
-        # error: no random story
-        self._login("example@example.com", "admin")
-        reply = self.client.get('/story/1/delete')
-        reply = self.client.get('/random_story')
-        self.assert_template_used("story.html")
-        self.assert_context("message", "Ooops.. No random story for you!")
+        reply = self.client.get("/random-story/1")
+        self.assertEqual(reply.status_code, 200) #FIXME
         
-    def test_new_story(self):
+    #def test_get_following_stories(self):
+        #TODO Stub
         
-        # success: render new_story.html
-        self._login("example@example.com", "admin")
-        reply = self.client.get('/stories/new_story')
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("new_story.html")
+    def test_add_remove_like(self):
         
-        # success: add a record in db
-        reply = self.client.post('/stories/new_story', data={ "theme" : "Mountain", "dice_number" : "3"})
-        self.assertEqual(reply.status_code, 302)
+        reply = self.client.post("/like/1")
+        self.assertEqual(reply.status_code, 201)
         with self.context:
-            s = Story.query.filter_by(id=2).first()
-            self.assertIsNotNone(s)
-            
-        # error: must first publish, no new record
-        reply = self.client.post('/stories/new_story', data={ "theme" : "Mountain", "dice_number" : "3"})
-        self.assertEqual(reply.status_code, 302)
-        with self.context:
-            s = Story.query.filter_by(id=3).first()
-            self.assertIsNone(s)
-            
-    def test_write_story(self):
+            s = Story.query.filter_by(id=1).first()
+            self.assertEqual(s.likes, 43)
         
-        # error: story id not valid
-        self._login("example@example.com", "admin")
-        reply = self.client.get('/write_story/3')
+        reply = self.client.post("/like/1")
+        self.assertEqual(reply.status_code, 201)
+        with self.context:
+            s = Story.query.filter_by(id=1).first()
+            self.assertEqual(s.likes, 44)
+        
+        reply = self.client.post("/like/5")
         self.assertEqual(reply.status_code, 404)
         
-        # error: I'm not author
-        self._logout()
-        self._signup("fantastic@example.com", "betterNerfIrelia", "404", "404", "01/01/1964", True)
-        self._login("fantastic@example.com", "betterNerfIrelia")
-        reply = self.client.post('/stories/new_story', data={ "theme" : "Mountain", "dice_number" : "3"})
+        reply = self.client.delete("/like/1")
+        self.assertEqual(reply.status_code, 200)
         with self.context:
-            s = Story.query.filter_by(id=2).first()
-            self.assertIsNotNone(s)
-        self._logout()
-        self._login("example@example.com", "admin")
-        reply = self.client.get('/write_story/2')
-        self.assertEqual(reply.status_code, 401)
+            s = Story.query.filter_by(id=1).first()
+            self.assertEqual(s.likes, 43)
+    
+    def test_add_remove_dislike(self):
+    
+        reply = self.client.post("/dislike/1")
+        self.assertEqual(reply.status_code, 201)
+        with self.context:
+            s = Story.query.filter_by(id=1).first()
+            self.assertEqual(s.dislikes, 6)
         
-        # success: render write_story.html
-        self._logout()
-        self._login("fantastic@example.com", "betterNerfIrelia")
-        reply = self.client.get('/write_story/2')
-        self.assertEqual(reply.status_code, 200)
-        self.assert_template_used("/write_story.html")
-
-        # error: title needed
-        reply = self.client.post('/write_story/2', data={
-                 'text' : "Mountain",
-                 'title' : "",
-                 'store_story' : 1})
-        self.assert_context("message", "You must complete the title in order to publish the story")
-        self.assertEqual(reply.status_code, 200)
-
-        # error: story not valid
-        reply = self.client.get('/write_story/2')
-        self.assertEqual(reply.status_code, 200)
-        reply = self.client.post('/write_story/2', data={
-                 'text' : "1",
-                 'title' : "ThisIsATitle",
-                 'store_story' : 1})
-        self.assert_context("message", "You must use all the words of the outcome!")
+        reply = self.client.post("/dislike/1")
+        self.assertEqual(reply.status_code, 201)
+        with self.context:
+            s = Story.query.filter_by(id=1).first()
+            self.assertEqual(s.dislikes, 7)
         
-        # success: written draft
-        reply = self.client.get('/write_story/2')
+        reply = self.client.post("/dislike/5")
+        self.assertEqual(reply.status_code, 404)
+        
+        reply = self.client.delete("/dislike/1")
         self.assertEqual(reply.status_code, 200)
-        reply = self.client.post('/write_story/2', data={
-                 'text' : "1",
-                 'title' : "ThisIsATitle",
-                 'store_story' : 0})
-        self.assert_template_used("/write_story.html")      
+        with self.context:
+            s = Story.query.filter_by(id=1).first()
+            self.assertEqual(s.dislikes, 6)  
+        
+    def test_new_draft(self):
+    
+        data = {'user_id' : 2, 'author_name' : 'Pippo', 'theme' : 'Montagna', 'dice_number' : 4}
+        reply = self.client.post("/new-draft", json=data)
+        self.assertEqual(reply.status_code, 404)
+        
+        data = {'user_id' : 2, 'author_name' : 'Pippo', 'theme' : 'Mountain', 'dice_number' : 4}
+        reply = self.client.post("/new-draft", json=data)
+        self.assertEqual(reply.status_code, 200)
+
+    def test_write_story(self):
+    
+        data = {'user_id' : 2, 'author_name' : 'Pluto', 'theme' : 'Mountain', 'dice_number' : 4}
+        reply = self.client.post("/new-draft", json=data)
+        self.assertEqual(reply.status_code, 200)
+        
+        data = {'story_id' : 5, 'title' : 'EE', 'text' : 'AO', 'published' : False}
+        reply = self.client.put("/write-story", json=data)
+        self.assertEqual(reply.status_code, 200)
+        
+        data = {'story_id' : 5, 'title' : '', 'text' : 'AO', 'published' : True}
+        reply = self.client.put("/write-story", json=data)
+        self.assertEqual(reply.status_code, 400)
+
+
+
         
         
         
