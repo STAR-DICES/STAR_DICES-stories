@@ -19,7 +19,7 @@ def getStories():
     drafts=request.args.get('drafts')
     start=request.args.get('start')
     end=request.args.get('end')
-    
+    json_data = r.json()['following_ids']
     stories=db.session.query(Story).order_by(Story.date.desc())
     if writer_id is not None:
         stories = stories.filter(Story.author_id == writer_id)
@@ -42,7 +42,7 @@ def getStoryById(user_id, story_id):
     user_id = int_validator(user_id)
     story_id = int_validator(story_id)
     if (user_id or story_id) is None:
-        return "Not Found!", 404 
+        return "Not Found!", 404
 
     story = Story.query.filter_by(id=story_id).first()
     if story is None or (user_id != story.author_id and story.published==0):
@@ -73,13 +73,6 @@ def retrieveSetThemes():
 def getWritersLastStories():
     stories=db.session.query(Story).filter_by(published=1).group_by(Story.author_id)
     return jsonify({'stories': [obj.serialize() for obj in stories]})
-
-def int_validator(string):
-    try:
-        value= int(string)
-    except (ValueError, TypeError):
-        return None
-    return value
 
 @stories.operation('get-random-story')
 def getRandomStory(user_id):
@@ -236,6 +229,13 @@ def general_validator(op_id, request):
                         return False
                 else:
                      return True
+
+def int_validator(string):
+    try:
+        value= int(string)
+    except (ValueError, TypeError):
+        return None
+    return value
 
 def is_story_valid(story_text, dice_roll):
     split_story_text = re.findall(r"[\w']+|[.,!?;]", story_text.lower())

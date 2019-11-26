@@ -58,6 +58,8 @@ paths:
             $ref: "#/definitions/Stories"
         '404':
           description: "Not Found!"
+        '500':
+          description: "Something went wrong"
 
   /retrieve-set-themes:
     get:
@@ -68,9 +70,7 @@ paths:
         '200':
           description: "Stories correctly loaded"
           schema:
-            $ref: "#/definitions/RetrieveSetThemeResponse"
-        '404':
-          description: "Not Found!"          
+            $ref: "#/definitions/RetrieveSetThemeResponse"     
 
   /story/{story_id}/{user_id}:
     get:
@@ -93,8 +93,6 @@ paths:
           description: "Story correctly loaded"
           schema:
             $ref: '#/definitions/Story'
-        '401':
-          description: "Not Authorized"
         '404':
           description: "Not Found!"
     delete:
