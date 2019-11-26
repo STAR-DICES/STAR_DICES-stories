@@ -7,8 +7,8 @@ _BROKER and _BACKEND are set to use rabbitmq
 The class ContextTask is used to create tasks with app_context
 '''
 def make_celery(app):
-    _BROKER = 'amqp://localhost'
-    _BACKEND = 'amqp://localhost'
+    _BROKER = 'amqp://rabbit'
+    _BACKEND = 'amqp://rabbit'
     celery = Celery(app, backend=_BACKEND, broker=_BROKER)
     celery.conf.update(app.config)
     TaskBase = celery.Task
