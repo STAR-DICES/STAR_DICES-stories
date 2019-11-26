@@ -28,7 +28,7 @@ class Story(db.Model):
         self.date = dt.datetime.now()
 
     def serialize(self):
-        return ({'id': self.id,
+        return ({'story_id': self.id,
                  'title': self.title,
                  'text': self.text,
                  'rolls_outcome': self.rolls_outcome,

@@ -137,7 +137,7 @@ def addDislike(story_id):
             return "Dislike added", 200
     return "Not Found!", 404
 
-@stories.operation('remove_like')
+@stories.operation('remove_dislike')
 def removeDislike(story_id):
     story_id = int_validator(story_id)
     if story_id is not None:
