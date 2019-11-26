@@ -27,7 +27,7 @@ def start(test = False):
         if story is None:
             example = Story()
             example.title = 'My first story!'
-            example.rolls_outcome = '["bike", "bus"]'
+            example.rolls_outcome = '[["bike", "static/Mountain/bike.PNG"], ["bus", "static/Mountain/bus.PNG"]]'
             example.text = 'With my bike, I am faster than a bus!!!!'
             example.theme = 'Mountain'
             example.published = 1

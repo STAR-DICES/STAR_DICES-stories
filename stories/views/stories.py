@@ -10,7 +10,7 @@ from sqlalchemy.sql.expression import func
 from flakon import SwaggerBlueprint
 
 stories = SwaggerBlueprint('stories', 'stories', swagger_spec='./stories/stories-specs.yaml')
-follows_url= 'http://127.0.0.1:5000'
+follows_url= 'http://follows:5000'
 
 @stories.operation('filter-stories')
 def getStories():
