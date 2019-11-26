@@ -94,6 +94,8 @@ def getRandomStory(user_id):
 @stories.operation('following-stories')
 def getFollowingStories(user_id):
     user_id = int_validator(user_id)
+    if user_id  is None:
+        return "Not Found!", 404 
     try:
         r = requests.get(follows_url + "/following-list/" + str(user_id))
     except (requests.exceptions.ConnectionError, requests.exceptions.Timeout):
