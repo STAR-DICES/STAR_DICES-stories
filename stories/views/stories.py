@@ -13,6 +13,12 @@ from flakon import SwaggerBlueprint
 stories = SwaggerBlueprint('stories', 'stories', swagger_spec='./stories/stories-specs.yaml')
 follows_url= 'http://follows:5000'
 
+"""
+This API returns, if the user is logged in, the list of all stories from all users
+in the social network. The POST is used to filters those stories by user picked date.
+If not logged, the anonymous user is redirected to the login page.
+"""
+
 @stories.operation('filter-stories')
 def getStories():
     writer_id= int_validator(request.args.get('writer_id'))
@@ -35,6 +41,9 @@ def getStories():
         stories = stories.filter(Story.date.between(start, end))
     return jsonify({'stories': [obj.serialize() for obj in stories]})
 
+"""
+This API returns the story by ID (given)
+"""
 
 @stories.operation('get_story_by_id')
 def getStoryById(user_id, story_id):
@@ -47,6 +56,10 @@ def getStoryById(user_id, story_id):
     if story is None or (user_id != story.author_id and story.published==0):
         return "Not Found!", 404
     return jsonify(story.serialize())
+
+"""
+This API deletes the story identified by the given ID
+"""
 
 @stories.operation('delete_story_by_id')
 def deleteStoryById(user_id, story_id):
@@ -64,15 +77,27 @@ def deleteStoryById(user_id, story_id):
     db.session.commit()
     return "Story correctly deleted", 200
 
+
+"""
+This API return all the themes available in the system, and the maximum number of dices that can be rolled.
+"""
 @stories.operation('retrieve-set-themes')
 def retrieveSetThemes():
     return jsonify({'themes' : retrieve_themes(), 'dice_number' : 6})
 
+
+"""
+This API returns the last story of each writer (writer id and name included)
+"""
 @stories.operation('writers-last-stories')
 def getWritersLastStories():
     stories=db.session.query(Story).filter_by(published=1).group_by(Story.author_id)
     return jsonify({'stories': [obj.serialize() for obj in stories]})
 
+
+"""
+This API return a random story (exluded own stories, given by the user id)
+"""
 @stories.operation('get-random-story')
 def getRandomStory(user_id):
     user_id = int_validator(user_id)
@@ -84,6 +109,9 @@ def getRandomStory(user_id):
     else:
         return jsonify(story.serialize())
 
+"""
+This API get a list of the stories of the following authors after asked them to /following-list in followers
+"""
 @stories.operation('following-stories')
 def getFollowingStories(user_id):
     user_id = int_validator(user_id)
@@ -97,6 +125,9 @@ def getFollowingStories(user_id):
     following_stories= db.session.query(Story).filter(Story.published==1).filter(Story.author_id.in_(json_data)).order_by(Story.date.desc()).all()
     return jsonify({'stories': [obj.serialize() for obj in following_stories]})
 
+"""
+The following  API are used by celery 
+"""
 @stories.operation('like')
 def addLike(story_id):
     story_id = int_validator(story_id)
@@ -149,6 +180,12 @@ def removeDislike(story_id):
             return "Dislike removed", 201
     return "Not Found!", 404
 
+""" End Celery API """
+
+
+"""
+This API initialize a new draft in the database and return the id
+"""
 @stories.operation('new-draft')
 def newDraft():
     if general_validator('new-draft', request):
@@ -178,7 +215,10 @@ def newDraft():
     else:
         return abort(400)
 
-#Not tested yet
+
+"""
+This API update the story with the given id, saving it as draft or publishing it
+"""
 @stories.operation('write-story')
 def writeStory():
     if general_validator('write-story', request):
@@ -211,7 +251,9 @@ def writeStory():
     else:
         return abort(400)
 
-
+"""
+Function used to import and validate the json schema defined in OpenAPI Yaml file
+"""
 def general_validator(op_id, request):
     schema= stories.spec['paths']
     for endpoint in schema.keys():
@@ -229,6 +271,9 @@ def general_validator(op_id, request):
                 else:
                      return True
 
+"""
+Check if the string is an integer, return the integer, otherwise thorw an exception
+"""
 def int_validator(string):
     try:
         value= int(string)
@@ -236,6 +281,10 @@ def int_validator(string):
         return None
     return value
 
+
+"""
+Check if the story text is valid with respect to the dice outcome
+"""
 def is_story_valid(story_text, dice_roll):
     split_story_text = re.findall(r"[\w']+|[.,!?;]", story_text.lower())
     for word in dice_roll:
