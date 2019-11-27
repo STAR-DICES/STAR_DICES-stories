@@ -134,7 +134,7 @@ def addLike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            async_like.delay(story_id)
+            async_like(story_id)
             # Use asynch celery
             #story.likes+=1
             #db.session.commit()
@@ -147,7 +147,7 @@ def removeLike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            async_remove_like.delay(story_id)
+            async_remove_like(story_id)
             # Use asynch celery
             #story.likes-=1
             #db.session.commit()
@@ -160,7 +160,7 @@ def addDislike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            async_dislike.delay(story_id)
+            async_dislike(story_id)
             # Use asynch celery
             #story.dislikes+=1
             #db.session.commit()
@@ -173,7 +173,7 @@ def removeDislike(story_id):
     if story_id is not None:
         story = Story.query.filter_by(id=story_id).filter_by(published=1).first()
         if story is not None:
-            async_remove_dislike.delay(story_id)
+            async_remove_dislike(story_id)
             # Use asynch celery
             #story.dislikes-=1
             #db.session.commit()
